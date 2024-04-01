@@ -1,5 +1,7 @@
 pyomo
-glpsol
+numpy
+streamlit
+glpk
 yfinance
 pandas_datareader
 datetime
