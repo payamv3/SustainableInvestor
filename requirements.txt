@@ -1,5 +1,4 @@
 yfinance
 pandas_datareader
 datetime
-pyomo.environ
 math
