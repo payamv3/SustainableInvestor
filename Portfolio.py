@@ -2,7 +2,6 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas_datareader as web
 from pandas_datareader import data as pdr
 from datetime import datetime
