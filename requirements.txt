@@ -1,5 +1,5 @@
 pyomo
-glpk
+glpsol
 yfinance
 pandas_datareader
 datetime
