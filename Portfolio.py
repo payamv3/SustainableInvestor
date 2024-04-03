@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import pandas_datareader as web
 from pandas_datareader import data as pdr
-from datetime import datetime
+from datetime import datetime, timedelta
 import pyomo.environ as pyo
 import math
 
@@ -26,6 +26,7 @@ warnings.filterwarnings("ignore", message="The 'unit' keyword in TimedeltaIndex 
 
 startdate = datetime(2023,1,1)
 enddate = datetime(2024,3,15)
+
 
 @st.cache_data
 def capture_data(symbols, startdate, enddate):
@@ -54,9 +55,15 @@ def capture_data(symbols, startdate, enddate):
     data = new_df.sample(n=50)
     return data
 
+st.write("This is the ESG score of your portfolio, calculated on a weighted average basis. Use the slider to set it to the mininum ESG score of your choice. ")
+
 esg_score = st.slider("ESG Score", min_value=0, max_value=100, value=80, step=1, format=None, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
 
+st.write("This is the Volatility of your portfolio, calculated on a weighted average basis. Use the slider to set it to the maximum volatility score of your choice. ")
+
 volatility_score = st.slider("Valotaility", min_value=0.0, max_value=1.0, value=0.5, step=0.1, format=None, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
+
+st.write("This is your investment capital. Use the slider to determine the overal cost of your investment portfolio.")
 
 investment_capital = st.slider("Investment Capital", min_value=2000, max_value=1000000, value=100000, step=100, format=None, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
 
@@ -114,10 +121,15 @@ model.display()
 # print shadow prices
 model.dual.display()
 
+def custom_floor(x):
+    if 0 < x < 1:
+        return 0
+    else:
+        return math.floor(x)
 
 # Print names of selected stocks
 st.write("Return on Portfolio: ", model.obj())  
 st.write("Selected Stocks and Investment Amounts:")
 for i in range(50):
     if model.x[i].value != 0:
-        st.write(data.index[i], math.floor(model.x[i].value))
+        st.write(data.index[i], custom_floor(model.x[i].value))
