@@ -25,8 +25,8 @@ warnings.filterwarnings("ignore", message="The 'unit' keyword in TimedeltaIndex 
 
 
 startdate = datetime(2023,1,1)
-enddate = datetime(2024,3,31)
-#enddate = datetime.today() - timedelta(days = 1)
+#enddate = datetime(2024,3,31)
+enddate = datetime.today().date() - timedelta(days = 1)
 
 
 @st.cache_data #
