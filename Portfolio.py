@@ -29,7 +29,7 @@ startdate = datetime(2023,1,1)
 enddate = datetime.today() - timedelta(days = 1)
 
 
-@st.cache_data
+@st.cache_data #
 def capture_data(symbols, startdate, enddate):
     data = pdr.get_data_yahoo(symbols, start=startdate, end=enddate)
     close = data.Close
@@ -56,7 +56,7 @@ def capture_data(symbols, startdate, enddate):
     data = new_df.sample(n=50)
     return data
 
-#data = capture_data(symbols, startdate, enddate)
+data = capture_data(symbols, startdate, enddate)
 
 st.write("This is the ESG score of your portfolio, calculated on a weighted average basis. Use the slider to set it to the mininum ESG score of your choice. ")
 
