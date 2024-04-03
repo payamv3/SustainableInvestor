@@ -56,6 +56,8 @@ def capture_data(symbols, startdate, enddate):
     data = new_df.sample(n=50)
     return data
 
+data = capture_data(symbols, startdate, enddate)
+
 st.write("This is the ESG score of your portfolio, calculated on a weighted average basis. Use the slider to set it to the mininum ESG score of your choice. ")
 
 esg_score = st.slider("ESG Score", min_value=0, max_value=100, value=80, step=1, format=None, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
@@ -68,7 +70,6 @@ st.write("This is your investment capital. Use the slider to determine the overa
 
 investment_capital = st.slider("Investment Capital", min_value=2000, max_value=1000000, value=100000, step=100, format=None, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
 
-data = capture_data(symbols, startdate, enddate)
 
 # Create a Pyomo model
 model = pyo.ConcreteModel()
