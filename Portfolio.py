@@ -25,7 +25,8 @@ warnings.filterwarnings("ignore", message="The 'unit' keyword in TimedeltaIndex 
 
 
 startdate = datetime(2023,1,1)
-enddate = datetime(2024,3,15)
+#enddate = datetime(2024,3,15)
+enddate = datetime.today()
 
 
 @st.cache_data
@@ -55,15 +56,15 @@ def capture_data(symbols, startdate, enddate):
     data = new_df.sample(n=50)
     return data
 
-st.write("This is the ESG score of your portfolio, calculated on a weighted average basis. Use the slider to set it to the mininum ESG score of your choice. ")
+st.subheader("This is the ESG score of your portfolio, calculated on a weighted average basis. Use the slider to set it to the mininum ESG score of your choice. ")
 
 esg_score = st.slider("ESG Score", min_value=0, max_value=100, value=80, step=1, format=None, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
 
-st.write("This is the Volatility of your portfolio, calculated on a weighted average basis. Use the slider to set it to the maximum volatility score of your choice. ")
+st.subheader("This is the Volatility of your portfolio, calculated on a weighted average basis. Use the slider to set it to the maximum volatility score of your choice. ")
 
 volatility_score = st.slider("Valotaility", min_value=0.0, max_value=1.0, value=0.5, step=0.1, format=None, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
 
-st.write("This is your investment capital. Use the slider to determine the overal cost of your investment portfolio.")
+st.subheader("This is your investment capital. Use the slider to determine the overal cost of your investment portfolio.")
 
 investment_capital = st.slider("Investment Capital", min_value=2000, max_value=1000000, value=100000, step=100, format=None, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
 
