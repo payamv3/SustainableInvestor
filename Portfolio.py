@@ -135,3 +135,28 @@ st.write("Selected Stocks and Investment Amounts:")
 for i in range(50):
     if model.x[i].value != 0:
         st.write(data.index[i], custom_floor(model.x[i].value))
+# print non-zero shadow prices with interpretations
+st.subheader("Non-zero Shadow Prices (Dual Values) with Interpretations:")
+for c in model.component_objects(pyo.Constraint, active=True):
+    for index in c:
+        shadow_price = model.dual[c[index]]
+        if shadow_price != 0:
+            if c == model.budget_constraint:
+                if index is not None:
+                    stock_index = index[0]  # Extract the stock index from the constraint index
+                    if shadow_price > 0:
+                        st.write("Budget Constraint for Stock:", data.index[stock_index], "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of", data.index[stock_index], "will increase return by", abs(shadow_price))
+                    elif shadow_price < 0:
+                        st.write("Budget Constraint for Stock:", data.index[stock_index], "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of", data.index[stock_index], "will decrease return by", abs(shadow_price))
+            elif c == model.esg_constraint:
+                print("Index:", index)
+                print("Index type:", type(index))
+                if shadow_price > 0:
+                    st.write("ESG Constraint:", "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of ESG Score will increase return by", shadow_price)
+                elif shadow_price < 0:
+                    st.write("ESG Constraint:", "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of ESG Score will decrease return by", abs(shadow_price))
+            elif c == model.volatility_constraint:
+                if shadow_price > 0:
+                    st.write("Volatility Constraint:", "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of Volatility will increase return by", shadow_price)
+                elif shadow_price < 0:
+                    st.write("Volatility Constraint:", "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of Volatility will decrease return by", abs(shadow_price))
