@@ -114,7 +114,7 @@ model.budgetallocation =pyo.Constraint(model.P,rule = budget_allocation)
 model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 
 model.pprint()
-opt = pyo.SolverFactory('glpk' solver_io="python")
+opt = pyo.SolverFactory('glpk', solver_io="python")
 
 # run the solver opt on the model to obtain optimization results
 results = opt.solve(model)
