@@ -20,7 +20,7 @@ tickers = pd.read_html(
 symbols = tickers.Symbol
 symbols = symbols.to_list()
 
-#yf.pdr_override()
+yf.pdr_override()
 
 import warnings
 warnings.filterwarnings("ignore", message="The 'unit' keyword in TimedeltaIndex construction is deprecated and will be removed in a future version. Use pd.to_timedelta instead.", category=FutureWarning, module="yfinance.utils")
