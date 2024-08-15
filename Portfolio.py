@@ -3,12 +3,11 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 np.float_ = np.float64
-np.complex_=np.complex128
+#np.complex_=np.complex128
 import pandas_datareader as web
 from pandas_datareader import data as pdr
 from datetime import datetime, timedelta
 import pyomo.environ as pyo
-from pyomo.environ import *
 import math
 
 st.sidebar.header("Being a Sustainable Investor")
