@@ -2,6 +2,8 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import numpy as np
+np.float_ = np.float64
+np.complex_=np.complex128
 import pandas_datareader as web
 from pandas_datareader import data as pdr
 from datetime import datetime, timedelta
