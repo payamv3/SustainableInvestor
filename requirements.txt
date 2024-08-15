@@ -1,4 +1,4 @@
-pyomo == 6.7.1
+pyomo == 6.7.2
 numpy
 streamlit
 glpk
