@@ -1,7 +1,7 @@
-pyomo
-numpy
+pyomo == 6.7.1
+numpy == 1.26.4
 streamlit
-glpk
+glpk == 0.4.7
 yfinance == 0.2.40
-pandas_datareader
+pandas_datareader == 0.10.0
 datetime
