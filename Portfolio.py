@@ -13,7 +13,7 @@ import math
 st.sidebar.header("Being a Sustainable Investor")
 st.sidebar.markdown("""Multicriteria Sustainable Systems Final Project""")
 st.sidebar.markdown("""Payam Saeedi""")
-st.sidebar.markdown(“[(‘https://content.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg’)](‘www.linkedin.com/in/p-saeedi’)”)
+st.sidebar.markdown([(‘https://content.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg’)](‘www.linkedin.com/in/p-saeedi’))
 
 # Read and print the stock tickers that make up S&P500
 tickers = pd.read_html(
