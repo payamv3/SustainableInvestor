@@ -23,7 +23,7 @@ yf.pdr_override()
 import warnings
 warnings.filterwarnings("ignore", message="The 'unit' keyword in TimedeltaIndex construction is deprecated and will be removed in a future version. Use pd.to_timedelta instead.", category=FutureWarning, module="yfinance.utils")
 
-np.float_ = np.float64
+
 startdate = datetime(2023,1,1)
 #enddate = datetime(2024,3,31)
 enddate = datetime.today().date() - timedelta(days = 1)
