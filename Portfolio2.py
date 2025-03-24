@@ -35,7 +35,7 @@ enddate = datetime.today().date() - timedelta(days = 1)
 def capture_data(symbols, startdate, enddate):
     # Read the data from a local CSV file with the following columns:
     # Ticker, Closing Price, Volatility, ESG Score and Return.
-    new_df = pd.read_csv('stocks.csv')
+    new_df = pd.read_csv('stockdata.csv')
     # Rename "ESG Score" to "ESG score" to match the rest of the code.
     new_df.rename(columns={"ESG Score": "ESG score"}, inplace=True)
     # Set the ticker column as the index
