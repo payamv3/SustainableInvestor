@@ -13,7 +13,8 @@ import math
 st.sidebar.header("Being a Sustainable Investor")
 st.sidebar.markdown("""Imagine a world where a sustainability score is attached to every publicly traded company. This means that any portfolio of stocks that you own has a weighted average sustainability score depending on what and how much you buy. Pair that with your investment capital, and the overall volatility you are willing to accept for your investment, and you have yourself a linear optimization problem.
 
-I have created a web app that takes on data on 50 random stocks from the S&P500 Index and attaches 50 “random” sustainability scores to them. It retrieves historic price data from the beginning of 2023, then maximizes returns on your portfolio based on your desired Sustainability Score, Volatility and Investment Capital. You can view the app and interact with the constraints and view the changes in your profits on the go! It also displays non-zero shadow prices and automatically interprets them.""")
+I have created a web app that takes on data on 50 random stocks from the S&P500 Index and attaches 50 “random” sustainability scores to them. It then maximizes returns on your portfolio based on your desired Sustainability Score, Volatility and Investment Capital. You can view the app and interact with the constraints and view the changes in your profits on the go! It also displays non-zero shadow prices and automatically interprets them.
+""")
 st.sidebar.markdown("""Payam Saeedi""")
 
 # Read and print the stock tickers that make up S&P500
