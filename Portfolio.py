@@ -4,11 +4,12 @@ import pandas as pd
 import numpy as np
 np.float_ = np.float64
 np.complex_ = np.complex128
-from pandas_datareader import data as pdr
 from datetime import datetime, timedelta
 import pyomo.environ as pyo
 import math
+import requests
 
+# -------------------- Sidebar --------------------
 st.sidebar.header("Being a Sustainable Investor")
 st.sidebar.markdown("""
 Imagine a world where a sustainability score is attached to every publicly traded company. 
@@ -22,29 +23,34 @@ It also displays non-zero shadow prices and automatically interprets them.
 """)
 st.sidebar.markdown("Payam Saeedi")
 
-# Read S&P500 symbols
-tickers = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')[0]
-symbols = tickers.Symbol.to_list()
+# -------------------- S&P500 Tickers --------------------
+def get_sp500_symbols():
+    try:
+        url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers)
+        tickers = pd.read_html(response.text)[0]
+        symbols = tickers.Symbol.to_list()
+        return symbols
+    except Exception as e:
+        st.warning(f"Could not fetch S&P500 symbols: {e}. Using CSV fallback.")
+        # Use local CSV fallback if necessary
+        df = pd.read_csv('stockdata.csv')
+        return df['Ticker'].tolist()
 
-yf.pdr_override()
+symbols = get_sp500_symbols()
 
-import warnings
-warnings.filterwarnings("ignore", message="The 'unit' keyword in TimedeltaIndex construction is deprecated", category=FutureWarning, module="yfinance.utils")
-
+# -------------------- Dates --------------------
 startdate = datetime(2023,1,1)
 enddate = datetime.today().date() - timedelta(days=1)
 
+# -------------------- Capture Data --------------------
 @st.cache_data
 def capture_data(symbols, startdate, enddate):
-    """
-    Capture stock data. Tries live Yahoo Finance first. 
-    Falls back to stockdata.csv if live data cannot be captured.
-    Always returns 50 stocks (or fewer if not enough available).
-    """
     data_list = []
     try:
         for symbol in symbols:
-            df = pdr.get_data_yahoo(symbol, start=startdate, end=enddate)
+            df = yf.download(symbol, start=startdate, end=enddate, progress=False)
             if df.empty:
                 continue
             df['Return'] = df['Adj Close'].pct_change().fillna(0)
@@ -57,10 +63,10 @@ def capture_data(symbols, startdate, enddate):
                 'Volatility': df['Volatility'].mean(),
                 'ESG score': df['ESG score'].iloc[-1]
             })
-        if len(data_list) < 10:  # Arbitrary threshold to decide if live data is unreliable
+        if len(data_list) < 10:
             raise ValueError("Insufficient live data")
         new_df = pd.DataFrame(data_list).set_index('Ticker')
-        new_df = new_df.sample(n=min(50, len(new_df)))  # Ensure 50 stocks
+        new_df = new_df.sample(n=min(50, len(new_df)))
     except Exception as e:
         st.warning(f"Live data could not be captured ({e}). Using local CSV instead.")
         new_df = pd.read_csv('stockdata.csv')
@@ -68,14 +74,12 @@ def capture_data(symbols, startdate, enddate):
             new_df.rename(columns={"ESG Score": "ESG score"}, inplace=True)
         new_df = new_df.set_index("Ticker")
         new_df = new_df.dropna()
-        new_df = new_df.sample(n=min(50, len(new_df)))  # Ensure 50 stocks
-
+        new_df = new_df.sample(n=min(50, len(new_df)))
     return new_df
 
-# Capture the data
 data = capture_data(symbols, startdate, enddate)
 
-# User Inputs
+# -------------------- User Inputs --------------------
 st.write("Set minimum ESG score:")
 esg_score = st.slider("ESG Score", min_value=0, max_value=100, value=80, step=1)
 
@@ -85,7 +89,7 @@ volatility_score = st.slider("Volatility", min_value=0.0, max_value=1.0, value=0
 st.write("Set your investment capital:")
 investment_capital = st.slider("Investment Capital", min_value=2000, max_value=1000000, value=100000, step=100)
 
-# Pyomo Model
+# -------------------- Pyomo Model --------------------
 model = pyo.ConcreteModel()
 num_stocks = len(data)
 model.x = pyo.Var(range(num_stocks), within=pyo.NonNegativeReals)
@@ -101,7 +105,7 @@ model.VolatilityConstraint = pyo.Param(initialize=volatility_score)
 
 model.obj = pyo.Objective(expr=sum(model.x[i] * model.P[i] * model.R[i] for i in range(num_stocks)), sense=pyo.maximize)
 
-# Constraints
+# -------------------- Constraints --------------------
 model.budget_constraint = pyo.Constraint(expr=sum(model.x[i] * model.P[i] for i in range(num_stocks)) == model.IC)
 model.esg_constraint = pyo.Constraint(expr=sum(model.ESG[i] * model.x[i]* model.P[i] for i in range(num_stocks)) >= model.Threshold * sum(model.x[i]* model.P[i] for i in range(num_stocks)))
 model.volatility_constraint = pyo.Constraint(expr=sum(model.Volatility[i] * model.x[i] for i in range(num_stocks)) <= model.VolatilityConstraint * sum(model.x[i] for i in range(num_stocks)))
@@ -112,13 +116,14 @@ model.budgetallocation = pyo.Constraint(range(num_stocks), rule=budget_allocatio
 
 model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 
+# -------------------- Solve --------------------
 opt = pyo.SolverFactory('glpk')
 results = opt.solve(model)
 
 def custom_floor(x):
     return 0 if 0 < x < 1 else math.floor(x)
 
-# Display Results
+# -------------------- Display Results --------------------
 st.write("Return on Portfolio: ", model.obj())  
 st.write("Selected Stocks and Investment Amounts:")
 for i in range(num_stocks):
