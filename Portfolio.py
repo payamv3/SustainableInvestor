@@ -9,7 +9,6 @@ import pyomo.environ as pyo
 import math
 import requests
 
-# -------------------- Sidebar --------------------
 st.sidebar.header("Being a Sustainable Investor")
 st.sidebar.markdown("""
 Imagine a world where a sustainability score is attached to every publicly traded company. 
@@ -23,7 +22,7 @@ It also displays non-zero shadow prices and automatically interprets them.
 """)
 st.sidebar.markdown("Payam Saeedi")
 
-# -------------------- S&P500 Tickers --------------------
+# -------------------- Get S&P500 tickers safely --------------------
 def get_sp500_symbols():
     try:
         url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
@@ -34,7 +33,6 @@ def get_sp500_symbols():
         return symbols
     except Exception as e:
         st.warning(f"Could not fetch S&P500 symbols: {e}. Using CSV fallback.")
-        # Use local CSV fallback if necessary
         df = pd.read_csv('stockdata.csv')
         return df['Ticker'].tolist()
 
@@ -80,18 +78,19 @@ def capture_data(symbols, startdate, enddate):
 data = capture_data(symbols, startdate, enddate)
 
 # -------------------- User Inputs --------------------
-st.write("Set minimum ESG score:")
+st.write("This is the ESG score of your portfolio, calculated on a weighted average basis. Use the slider to set it to the minimum ESG score of your choice.")
 esg_score = st.slider("ESG Score", min_value=0, max_value=100, value=80, step=1)
 
-st.write("Set maximum portfolio volatility:")
+st.write("This is the Volatility of your portfolio, calculated on a weighted average basis. Use the slider to set it to the maximum volatility score of your choice.")
 volatility_score = st.slider("Volatility", min_value=0.0, max_value=1.0, value=0.5, step=0.1)
 
-st.write("Set your investment capital:")
+st.write("This is your investment capital. Use the slider to determine the overall cost of your investment portfolio.")
 investment_capital = st.slider("Investment Capital", min_value=2000, max_value=1000000, value=100000, step=100)
 
 # -------------------- Pyomo Model --------------------
 model = pyo.ConcreteModel()
 num_stocks = len(data)
+
 model.x = pyo.Var(range(num_stocks), within=pyo.NonNegativeReals)
 
 model.P = {i: data['Closing Price'].iloc[i] for i in range(num_stocks)}
@@ -105,7 +104,7 @@ model.VolatilityConstraint = pyo.Param(initialize=volatility_score)
 
 model.obj = pyo.Objective(expr=sum(model.x[i] * model.P[i] * model.R[i] for i in range(num_stocks)), sense=pyo.maximize)
 
-# -------------------- Constraints --------------------
+# Constraints
 model.budget_constraint = pyo.Constraint(expr=sum(model.x[i] * model.P[i] for i in range(num_stocks)) == model.IC)
 model.esg_constraint = pyo.Constraint(expr=sum(model.ESG[i] * model.x[i]* model.P[i] for i in range(num_stocks)) >= model.Threshold * sum(model.x[i]* model.P[i] for i in range(num_stocks)))
 model.volatility_constraint = pyo.Constraint(expr=sum(model.Volatility[i] * model.x[i] for i in range(num_stocks)) <= model.VolatilityConstraint * sum(model.x[i] for i in range(num_stocks)))
@@ -130,14 +129,26 @@ for i in range(num_stocks):
     if model.x[i].value != 0:
         st.write(data.index[i], custom_floor(model.x[i].value))
 
+# -------------------- Shadow Prices with Original Interpretation --------------------
 st.subheader("Non-zero Shadow Prices (Dual Values) with Interpretations:")
 for c in model.component_objects(pyo.Constraint, active=True):
     for index in c:
         shadow_price = model.dual[c[index]]
         if shadow_price != 0:
             if c == model.budget_constraint:
-                st.write(f"Budget Constraint - Shadow Price: {shadow_price}")
+                if index is not None:
+                    stock_index = index[0] if isinstance(index, tuple) else None
+                    if shadow_price > 0:
+                        st.write("Budget Constraint for Stock:", data.index[stock_index], "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of", data.index[stock_index], "will increase return by", abs(shadow_price))
+                    elif shadow_price < 0:
+                        st.write("Budget Constraint for Stock:", data.index[stock_index], "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of", data.index[stock_index], "will decrease return by", abs(shadow_price))
             elif c == model.esg_constraint:
-                st.write(f"ESG Constraint - Shadow Price: {shadow_price}")
+                if shadow_price > 0:
+                    st.write("ESG Constraint:", "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of ESG Score will increase return by", shadow_price)
+                elif shadow_price < 0:
+                    st.write("ESG Constraint:", "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of ESG Score will decrease return by", abs(shadow_price))
             elif c == model.volatility_constraint:
-                st.write(f"Volatility Constraint - Shadow Price: {shadow_price}")
+                if shadow_price > 0:
+                    st.write("Volatility Constraint:", "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of Volatility will increase return by", shadow_price)
+                elif shadow_price < 0:
+                    st.write("Volatility Constraint:", "- Shadow Price:", shadow_price, "- Interpretation: Additional unit of Volatility will decrease return by", abs(shadow_price))
